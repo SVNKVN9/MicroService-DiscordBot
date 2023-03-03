@@ -1,0 +1,4 @@
+/config.json
+
+/Gateway/node_modules/*
+/Message/node_modules/*

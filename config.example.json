@@ -1,0 +1,6 @@
+{
+    "TOKEN": "TOKEN HERE",
+    "Service_URL": {
+        "Message": "http://localhost:5001"
+    }
+}
