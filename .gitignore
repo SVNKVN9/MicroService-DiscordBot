@@ -1,4 +1,5 @@
 /config.json
 
 /Gateway/node_modules/*
+/Gateway/dist/*
 /Message/node_modules/*

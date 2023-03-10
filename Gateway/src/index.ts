@@ -1,24 +1,36 @@
-import { WebSocketManager, WebSocketShardEvents, WorkerShardingStrategy } from "@discordjs/ws";
-import { REST } from "@discordjs/rest";
+import { ShardingManager } from 'discord.js'
 import { IConfig } from "./types";
-import EventFilter from "./events/EventFilter";
 
 const config = require('../../config.json') as IConfig
 
-const rest = new REST().setToken(config.TOKEN)
-
-const Manager = new WebSocketManager({
+const Manager = new ShardingManager('./dist/bot.js', {
     token: config.TOKEN,
-    intents: 3276799,
-    rest,
+    totalShards: 'auto',
+    respawn: true
 })
 
-Manager.setStrategy(new WorkerShardingStrategy(Manager, { shardsPerWorker: 'all' }))
+const DateFormat = () => `[${new Date().toString().split(" ", 5).join(" ")}]`
 
-Manager.on(WebSocketShardEvents.Dispatch, ({ data }) => {
-    const { t, d } = data
+Manager.on('shardCreate', (shard) => {
+    console.log(`${DateFormat()} Main System Launched shard (${shard.id})`)
 
-    EventFilter(t, d)
+    shard.on("death", (process) => {
+        console.log(`${DateFormat()} Shard (${shard.id}) closed unexpectedly!`);
+    });
+
+    shard.on("disconnect", () => {
+        console.log(`${DateFormat()} Shard (${shard.id}) disconnected. Dumping socket close event...`);
+    });
+
+    shard.on("reconnecting", () => {
+        console.log(`${DateFormat()} Shard (${shard.id}) is reconnecting...`);
+    });
+
+    shard.on('error', (error) => {
+        console.log(`${DateFormat()} Shard (${shard.id}) is ${error}`);
+    });
 })
 
-Manager.connect()
+Manager.spawn()
+
+process.on('uncaughtException', (err) => console.log(err))
